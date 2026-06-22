@@ -889,7 +889,7 @@ describe('Receiver', () => {
     });
   });
 
-  it('emits an error if there are too many message fragments (1/2)', (done) => {
+  it('emits an error if there are too many message fragments (1/3)', (done) => {
     const receiver = new Receiver(undefined, {}, 0, 0, 2);
 
     receiver.on('error', (err) => {
@@ -914,7 +914,22 @@ describe('Receiver', () => {
     );
   });
 
-  it('emits an error if there are too many message fragments (2/2)', (done) => {
+  it('emits an error if there are too many message fragments (2/3)', (done) => {
+    const receiver = new Receiver(undefined, {}, 0, 0, 2);
+
+    receiver.on('error', (err) => {
+      assert.ok(err instanceof RangeError);
+      assert.strictEqual(err.message, 'Too many message fragments');
+      assert.strictEqual(err[kStatusCode], 1008);
+      done();
+    });
+
+    receiver.write(Buffer.from([0x02, 0x00]));
+    receiver.write(Buffer.from([0x00, 0x00]));
+    receiver.write(Buffer.from([0x00, 0x00]));
+  });
+
+  it('emits an error if there are too many message fragments (3/3)', (done) => {
     const perMessageDeflate = new PerMessageDeflate();
     perMessageDeflate.accept([{}]);
 
